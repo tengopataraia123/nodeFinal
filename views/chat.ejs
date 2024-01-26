@@ -1,0 +1,81 @@
+<html>
+  <head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <title>Chat</title>
+  </head>
+  <body>
+    <section style="background-color: #eee;">
+      <div class="container py-5">
+    
+        <div class="row d-flex justify-content-center">
+          <div class="col-md-8 col-lg-6 col-xl-4">
+    
+            <div class="card" id="chat1" style="border-radius: 15px;">
+              <div
+                class="card-header d-flex justify-content-between align-items-center p-3 bg-info text-white border-bottom-0"
+                style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                <i class="fas fa-angle-left"></i>
+                <p class="mb-0 fw-bold">Live chat: <%= user.username %></p>
+                <a class="btn btn-danger" href="/">LogOut</a>
+                <i class="fas fa-times"></i>
+              </div>
+              <div class="card-body" style="overflow-y: scroll; max-height: 60vh;" id="messages">
+
+                
+                <% messages.forEach(message => { %>
+
+                  <% if(message.userId.username === user.username) { %>
+                  <div class="d-flex flex-row justify-content-end mb-4">
+                    <div class="p-3 ms-3" style="border-radius: 15px; background-color: rgba(57, 192, 237, 0.905);">
+                  <% }else{ %>
+                    <div class="d-flex flex-row justify-content-start mb-4">
+                      <div class="p-3 ms-3" style="border-radius: 15px; background-color: rgba(57, 192, 237,.2);">
+                  <% } %>
+                      <p class="small mb-0"><%= message.userId.username %>: <%= message.text %></p>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+              <div class="form-outline">
+                <textarea class="form-control" id="m" rows="4"></textarea>
+                <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+              </div>
+            </div>
+    
+          </div>
+        </div>
+    
+      </div>
+    </section>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+      function sendMessage() {
+        socket.emit('chat message', document.getElementById('m').value, '<%= user._id %>');
+        document.getElementById('m').value = '';
+        return false;
+      }
+      socket.on('chat message', function(msg) {
+        var messagesList = document.getElementById('messages');
+        var newMessage = document.createElement('div');
+
+        newMessage.innerHTML = `<div class="d-flex flex-row justify-content-start mb-4">
+                      <div class="p-3 ms-3" style="border-radius: 15px; background-color: rgba(57, 192, 237,.2);">
+                    <p class="small mb-0">${msg.username}: ${msg.text}</p>
+                  </div>
+                </div>`
+        
+        if(msg.username === '<%= user.username %>'){
+          newMessage.innerHTML = `<div class="d-flex flex-row justify-content-end mb-4">
+                    <div class="p-3 ms-3" style="border-radius: 15px; background-color: rgba(57, 192, 237, 0.905);">
+                    <p class="small mb-0">${msg.username}: ${msg.text}</p>
+                  </div>
+                </div>`
+        }
+
+        messagesList.appendChild(newMessage);
+      });
+    </script>
+  </body>
+</html>
